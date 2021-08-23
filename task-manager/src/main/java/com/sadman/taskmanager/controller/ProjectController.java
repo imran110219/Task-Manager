@@ -1,5 +1,6 @@
 package com.sadman.taskmanager.controller;
 
+import com.sadman.taskmanager.dto.ProjectDTO;
 import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.ProjectService;
 import com.sadman.taskmanager.model.Project;
@@ -25,19 +26,19 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/projects")
-    public List<Project> getAllProjects(Model model) {
+    public List<ProjectDTO> getAllProjects(Model model) {
         return service.getAllProjects();
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/projects/mine")
-    public List<Project> getAllProjectsMine(Model model) {
+    public List<ProjectDTO> getAllProjectsMine(Model model) {
         return service.getCurrentUserProjects();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/projects/users/{id}")
-    public List<Project> getAllProjectsByUserId(@PathVariable(value = "id") int userId) {
+    public List<ProjectDTO> getAllProjectsByUserId(@PathVariable(value = "id") int userId) {
         return service.getAllProjectsByUserId(userId);
     }
 

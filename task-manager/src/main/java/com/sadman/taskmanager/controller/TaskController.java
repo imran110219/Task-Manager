@@ -1,5 +1,6 @@
 package com.sadman.taskmanager.controller;
 
+import com.sadman.taskmanager.dto.TaskDTO;
 import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.TaskService;
 import com.sadman.taskmanager.iservice.UserService;
@@ -24,34 +25,34 @@ public class TaskController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/tasks")
-    public List<Task> getAllTasks(Model model) {
+    public List<TaskDTO> getAllTasks(Model model) {
         return service.getAllTasks();
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/tasks/mine")
-    public List<Task> getAllTasksMine(Model model) {
+    public List<TaskDTO> getAllTasksMine(Model model) {
         return service.getCurrentUserTasks();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/tasks/users/{id}")
-    public List<Task> getAllTasksByUserId(@PathVariable(value = "id") int userId) {
+    public List<TaskDTO> getAllTasksByUserId(@PathVariable(value = "id") int userId) {
         return service.getAllTasksByUserId(userId);
     }
 
     @GetMapping("projects/{id}/tasks")
-    public List<Task> getAllTasksByProjectId(@PathVariable(value = "id") int projectId) {
+    public List<TaskDTO> getAllTasksByProjectId(@PathVariable(value = "id") int projectId) {
         return service.getAllTasksByProjectId(projectId);
     }
 
     @GetMapping("/tasks/status/{status}")
-    public List<Task> getAllTasksByStatus(@PathVariable(value = "status") String status) {
+    public List<TaskDTO> getAllTasksByStatus(@PathVariable(value = "status") String status) {
         return service.getAllTasksByStatus(status);
     }
 
     @GetMapping("/tasks/expired/status/{status}")
-    public List<Task> getAllExpiredTasksByStatus(@PathVariable(value = "status") String status) {
+    public List<TaskDTO> getAllExpiredTasksByStatus(@PathVariable(value = "status") String status) {
         return service.getAllExpiredTasksByStatus(status);
     }
 
@@ -68,7 +69,7 @@ public class TaskController {
     }
 
     @PutMapping("/tasks/edit/{id}")
-    public Task editTaskById(@RequestBody Task newTask, @PathVariable(value = "id") int taskId) {
+    public ResponseEntity<Task> editTaskById(@RequestBody Task newTask, @PathVariable(value = "id") int taskId) {
         return service.updateTask(newTask, taskId);
     }
 

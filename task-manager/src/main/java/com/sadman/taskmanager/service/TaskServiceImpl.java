@@ -1,5 +1,6 @@
 package com.sadman.taskmanager.service;
 
+import com.sadman.taskmanager.dto.TaskDTO;
 import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.TaskService;
 import com.sadman.taskmanager.model.Status;
@@ -7,8 +8,11 @@ import com.sadman.taskmanager.model.Task;
 import com.sadman.taskmanager.repository.ProjectRepository;
 import com.sadman.taskmanager.repository.TaskRepository;
 import com.sadman.taskmanager.repository.UserRepository;
+import com.sadman.taskmanager.util.DataUtils;
 import com.sadman.taskmanager.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -16,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Sadman
@@ -36,41 +41,45 @@ public class TaskServiceImpl implements TaskService {
     JwtUtils jwtUtils;
 
     @Override
-    public List<Task> getAllTasks() {
-        return repository.findAll();
+    public List<TaskDTO> getAllTasks() {
+        List<Task> taskList = repository.findAll();
+        return DataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
-    public List<Task> getCurrentUserTasks() {
+    public List<TaskDTO> getCurrentUserTasks() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization").split(" ")[1];
         String userName = jwtUtils.getUserNameFromJwtToken(token);
         int userId = userRepository.findByUserName(userName).getId();
-        return repository.findAllByUserId(userId);
+        List<Task> taskList = repository.findAllByUserId(userId);
+        return DataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
-    public List<Task> getAllTasksByProjectId(int projectId) {
-        return repository.findAllByProjectId(projectId);
+    public List<TaskDTO> getAllTasksByProjectId(int projectId) {
+        List<Task> taskList = repository.findAllByProjectId(projectId);
+        return DataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
-    public List<Task> getAllTasksByUserId(int userId) {
-        return repository.findAllByUserId(userId);
+    public List<TaskDTO> getAllTasksByUserId(int userId) {
+        List<Task> taskList = repository.findAllByUserId(userId);
+        return DataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
-    public List<Task> getAllTasksByStatus(String status) {
+    public List<TaskDTO> getAllTasksByStatus(String status) {
         switch (status){
-            case "open" : return repository.findAllByStatus(Status.OPEN);
-            case "inprogress" : return repository.findAllByStatus(Status.INPROGESS);
-            case "closed" : return repository.findAllByStatus(Status.CLOSED);
+            case "open" : return DataUtils.convertTaskDTOList(repository.findAllByStatus(Status.OPEN));
+            case "inprogress" : return DataUtils.convertTaskDTOList(repository.findAllByStatus(Status.INPROGESS));
+            case "closed" : return DataUtils.convertTaskDTOList(repository.findAllByStatus(Status.CLOSED));
             default: return null;
         }
     }
 
     @Override
-    public List<Task> getAllExpiredTasksByStatus(String status) {
+    public List<TaskDTO> getAllExpiredTasksByStatus(String status) {
         List<Task> allExpiredTasks = repository.findExpiredTasks();
         List<Task> finalTasks = new ArrayList<>();
         if(status.equals("open")){
@@ -94,7 +103,7 @@ public class TaskServiceImpl implements TaskService {
                 }
             }
         }
-        return finalTasks;
+        return DataUtils.convertTaskDTOList(finalTasks);
     }
 
     @Override
@@ -108,23 +117,26 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task updateTask(Task newTask, int id) {
-        return repository.findById(id)
-                .map(Task -> {
-                    Task.setName(newTask.getName());
-                    Task.setProject(newTask.getProject());
-                    Task.setUser(newTask.getUser());
-                    Task.setStatus(newTask.getStatus());
-                    Task.setDescription(newTask.getDescription());
-                    Task.setCreateDate(newTask.getCreateDate());
-                    Task.setStartDate(newTask.getStartDate());
-                    Task.setEndDate(newTask.getEndDate());
-                    return repository.save(Task);
-                })
-                .orElseGet(() -> {
-                    newTask.setId(id);
-                    return repository.save(newTask);
-                });
+    public ResponseEntity<Task> updateTask(Task newTask, int id) {
+        Optional<Task> tempTask = repository.findById(id);
+
+        if (tempTask.isPresent()) {
+            Task task = tempTask.get();
+            if(task.getStatus().equals(Status.CLOSED)){
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            }
+            task.setName(newTask.getName());
+            task.setProject(newTask.getProject());
+            task.setUser(newTask.getUser());
+            task.setStatus(newTask.getStatus());
+            task.setDescription(newTask.getDescription());
+            task.setCreateDate(newTask.getCreateDate());
+            task.setStartDate(newTask.getStartDate());
+            task.setEndDate(newTask.getEndDate());
+            return new ResponseEntity<>(repository.save(task), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override

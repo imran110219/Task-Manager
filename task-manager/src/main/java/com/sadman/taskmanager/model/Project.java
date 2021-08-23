@@ -22,7 +22,7 @@ public class Project {
     @Column(name="name")
     private String name;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne
     @JoinColumn(name="user_id")
     private User user;
 }
