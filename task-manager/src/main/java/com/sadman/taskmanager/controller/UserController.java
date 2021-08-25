@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
-import javax.validation.Valid;
-
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -22,7 +21,7 @@ public class UserController {
     UserService service;
 
     @GetMapping("/users")
-    public List<User> getAllUseres(Model model) {
+    public List<User> getAllUsers(Model model) {
         return service.getAllUsers();
     }
 
@@ -44,7 +43,7 @@ public class UserController {
     }
 
     @DeleteMapping("/users/delete/{id}")
-    public void deleteUserById(@PathVariable(value = "id") int userId){
+    public void deleteUserById(@PathVariable(value = "id") int userId) {
         service.deleteUserById(userId);
     }
 }
