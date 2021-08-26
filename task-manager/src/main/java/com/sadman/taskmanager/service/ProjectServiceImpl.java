@@ -5,11 +5,15 @@ import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.ProjectService;
 import com.sadman.taskmanager.model.Project;
 import com.sadman.taskmanager.model.Task;
+import com.sadman.taskmanager.payload.response.MessageResponse;
 import com.sadman.taskmanager.repository.ProjectRepository;
+import com.sadman.taskmanager.repository.TaskRepository;
 import com.sadman.taskmanager.repository.UserRepository;
 import com.sadman.taskmanager.util.DataUtils;
 import com.sadman.taskmanager.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -31,28 +35,31 @@ public class ProjectServiceImpl implements ProjectService {
     UserRepository userRepository;
 
     @Autowired
+    TaskRepository taskRepository;
+
+    @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    DataUtils dataUtils;
 
     @Override
     public List<ProjectDTO> getAllProjects() {
         List<Project> projectList = repository.findAll();
-        return DataUtils.convertProjectDTOList(projectList);
+        return dataUtils.convertProjectDTOList(projectList);
     }
 
     @Override
     public List<ProjectDTO> getCurrentUserProjects() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String token = request.getHeader("Authorization").split(" ")[1];
-        String userName = jwtUtils.getUserNameFromJwtToken(token);
-        int userId = userRepository.findByUserName(userName).getId();
+        int userId = dataUtils.getCurrentUserId();
         List<Project> projectList = repository.findAllByUserId(userId);
-        return DataUtils.convertProjectDTOList(projectList);
+        return dataUtils.convertProjectDTOList(projectList);
     }
 
     @Override
     public List<ProjectDTO> getAllProjectsByUserId(int userId) {
         List<Project> projectList = repository.findAllByUserId(userId);
-        return DataUtils.convertProjectDTOList(projectList);
+        return dataUtils.convertProjectDTOList(projectList);
     }
 
     @Override
@@ -61,8 +68,20 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Project createProject(Project project) {
-        return repository.save(project);
+    public ResponseEntity<?> createProject(ProjectDTO projectDTO) {
+        int userId = dataUtils.getCurrentUserId();
+        if (repository.findByNameAndUserId(projectDTO.getProjectName(), userId) != null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Duplicate Project Name!"));
+        }
+        Project project = new Project();
+        project.setName(projectDTO.getProjectName());
+        project.setUser(userRepository.getById(userId));
+        Project savedProject = repository.save(project);
+        return ResponseEntity
+                .ok()
+                .body(new MessageResponse(project.getName() + " is created by " + project.getUser().getFirstName() + " " + project.getUser().getLastName()));
     }
 
     @Override
@@ -80,7 +99,19 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void deleteProjectById(int id) {
+    public ResponseEntity<?> deleteProjectById(int id) {
+        Project project = repository.getById(id);
+        int userId = dataUtils.getCurrentUserId();
+        if (project.getUser().getId() != userId) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: You are unauthorized!"));
+        }
+        if (taskRepository.findAllByProjectId(id).size() != 0) {
+            return ResponseEntity.unprocessableEntity().body(new MessageResponse("Failed to delete the project"));
+        }
         repository.deleteById(id);
+        return ResponseEntity.ok().body(new MessageResponse("Project is Deleted Successfully"));
     }
 }
+

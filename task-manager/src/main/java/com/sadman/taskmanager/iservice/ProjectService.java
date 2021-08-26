@@ -4,6 +4,7 @@ import com.sadman.taskmanager.dto.ProjectDTO;
 import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.model.Project;
 import com.sadman.taskmanager.model.Task;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface ProjectService {
     List<ProjectDTO> getCurrentUserProjects();
     List<ProjectDTO> getAllProjectsByUserId(int userId);
     Project getProjectById(int id) throws RecordNotFoundException;
-    Project createProject(Project project);
+    ResponseEntity<?> createProject(ProjectDTO projectDTO);
     Project updateProject(Project newProject, int id);
-    void deleteProjectById(int id);
+    ResponseEntity<?> deleteProjectById(int id);
 }

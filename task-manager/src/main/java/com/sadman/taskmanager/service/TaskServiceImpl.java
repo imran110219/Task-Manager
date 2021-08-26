@@ -40,10 +40,13 @@ public class TaskServiceImpl implements TaskService {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    DataUtils dataUtils;
+
     @Override
     public List<TaskDTO> getAllTasks() {
         List<Task> taskList = repository.findAll();
-        return DataUtils.convertTaskDTOList(taskList);
+        return dataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
@@ -53,27 +56,27 @@ public class TaskServiceImpl implements TaskService {
         String userName = jwtUtils.getUserNameFromJwtToken(token);
         int userId = userRepository.findByUserName(userName).getId();
         List<Task> taskList = repository.findAllByUserId(userId);
-        return DataUtils.convertTaskDTOList(taskList);
+        return dataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
     public List<TaskDTO> getAllTasksByProjectId(int projectId) {
         List<Task> taskList = repository.findAllByProjectId(projectId);
-        return DataUtils.convertTaskDTOList(taskList);
+        return dataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
     public List<TaskDTO> getAllTasksByUserId(int userId) {
         List<Task> taskList = repository.findAllByUserId(userId);
-        return DataUtils.convertTaskDTOList(taskList);
+        return dataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
     public List<TaskDTO> getAllTasksByStatus(String status) {
         switch (status){
-            case "open" : return DataUtils.convertTaskDTOList(repository.findAllByStatus(Status.OPEN));
-            case "inprogress" : return DataUtils.convertTaskDTOList(repository.findAllByStatus(Status.INPROGESS));
-            case "closed" : return DataUtils.convertTaskDTOList(repository.findAllByStatus(Status.CLOSED));
+            case "open" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.OPEN));
+            case "inprogress" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.INPROGESS));
+            case "closed" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.CLOSED));
             default: return null;
         }
     }
@@ -103,7 +106,7 @@ public class TaskServiceImpl implements TaskService {
                 }
             }
         }
-        return DataUtils.convertTaskDTOList(finalTasks);
+        return dataUtils.convertTaskDTOList(finalTasks);
     }
 
     @Override

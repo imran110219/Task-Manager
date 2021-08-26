@@ -6,6 +6,7 @@ import com.sadman.taskmanager.iservice.ProjectService;
 import com.sadman.taskmanager.model.Project;
 import com.sadman.taskmanager.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,9 +51,10 @@ public class ProjectController {
         return ResponseEntity.ok().body(Project);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PostMapping(value = "/projects", consumes = MediaType.ALL_VALUE)
-    public Project createProject(@Valid @RequestBody Project project) {
-        return service.createProject(project);
+    public ResponseEntity<?> createProject(@Valid @RequestBody ProjectDTO projectDTO) {
+        return service.createProject(projectDTO);
     }
 
     @PutMapping("/projects/edit/{id}")
@@ -61,7 +63,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/projects/delete/{id}")
-    public void deleteProjectById(@PathVariable(value = "id") int projectId){
-        service.deleteProjectById(projectId);
+    public ResponseEntity<?> deleteProjectById(@PathVariable(value = "id") int projectId){
+        return service.deleteProjectById(projectId);
     }
 }

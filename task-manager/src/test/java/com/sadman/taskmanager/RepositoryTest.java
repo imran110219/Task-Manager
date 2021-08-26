@@ -56,6 +56,12 @@ public class RepositoryTest {
     }
 
     @Test
+    public void findByNameAndUserIdTest() {
+        Project project = projectRepository.findByNameAndUserId("Project 5", 2);
+        assertThat(project.getName()).isEqualTo("Project 5");
+    }
+
+    @Test
     public void saveUserRepositoryTest(){
         User user = new User();
         user.setFirstName("Mr");
