@@ -3,6 +3,7 @@ package com.sadman.taskmanager.util;
 import com.sadman.taskmanager.dto.ProjectDTO;
 import com.sadman.taskmanager.dto.TaskDTO;
 import com.sadman.taskmanager.model.Project;
+import com.sadman.taskmanager.model.Status;
 import com.sadman.taskmanager.model.Task;
 import com.sadman.taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class DataUtils {
     public List<TaskDTO> convertTaskDTOList(List<Task> taskList){
         List<TaskDTO> taskDTOList = new ArrayList<>();
         taskList.forEach((task) -> {
-            TaskDTO taskDTO = new TaskDTO(task.getName(), task.getProject().getName(), task.getUser().getUserName(), task.getStatus().toString(), task.getDescription(), task.getEndDate());
+            TaskDTO taskDTO = new TaskDTO(task.getName(), task.getProject().getId(), task.getUser().getUserName(), task.getStatus().toString(), task.getDescription(), task.getEndDate());
             taskDTOList.add(taskDTO);
         });
         return taskDTOList;
@@ -49,5 +50,14 @@ public class DataUtils {
         String token = request.getHeader("Authorization").split(" ")[1];
         String userName = jwtUtils.getUserNameFromJwtToken(token);
         return userRepository.findByUserName(userName).getId();
+    }
+
+    public Status stringToStatus(String text){
+        switch (text){
+            case "OPEN" : return Status.OPEN;
+            case "INPROGRESS" : return Status.INPROGRESS;
+            case "CLOSED" : return Status.CLOSED;
+            default: return null;
+        }
     }
 }

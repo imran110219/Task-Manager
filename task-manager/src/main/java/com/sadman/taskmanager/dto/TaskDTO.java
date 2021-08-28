@@ -16,7 +16,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class TaskDTO {
     private String name;
-    private String projectName;
+    private int projectId;
     private String userName;
     private String status;
     private String description;

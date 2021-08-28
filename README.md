@@ -101,7 +101,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-    "Your Project Name is created by Mr Admin"
+    "message": "Your Project Name is created by Mr Admin"
 }
 ```
 **Failed Response:**
@@ -169,3 +169,56 @@ Content-Type: application/json
 Project is Deleted Successfully
 ```
 
+## Create Task
+**You send:**  Task Name, Description, Project Id with authorization token.
+**You get:** A response message of creating task.
+
+**Request:**
+```json
+localhost:8080/api/tasks
+POST 
+Accept: application/json
+Content-Type: application/json
+
+{
+    "name": "Task Admin",
+    "projectId": "1",
+    "description": "description"
+}
+```
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "message": "Task Admin is created by Mr John"
+}
+``` 
+
+## Edit Task
+**You send:**  Task Description, Status and Due date with authorization token.
+**You get:** A response message of creating task.
+
+**Request:**
+```json
+localhost:8080/api/tasks/edit/4
+PUT 
+Accept: application/json
+Content-Type: application/json
+
+{
+    "description": "description",
+    "status": "INPROGRESS",
+    "endDate": "23-12-2022"
+}
+```
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "message": "Task 4 is edited"
+}
+``` 

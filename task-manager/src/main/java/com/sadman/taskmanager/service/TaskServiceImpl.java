@@ -1,10 +1,13 @@
 package com.sadman.taskmanager.service;
 
+import com.sadman.taskmanager.dto.ProjectDTO;
 import com.sadman.taskmanager.dto.TaskDTO;
 import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.TaskService;
+import com.sadman.taskmanager.model.Project;
 import com.sadman.taskmanager.model.Status;
 import com.sadman.taskmanager.model.Task;
+import com.sadman.taskmanager.payload.response.MessageResponse;
 import com.sadman.taskmanager.repository.ProjectRepository;
 import com.sadman.taskmanager.repository.TaskRepository;
 import com.sadman.taskmanager.repository.UserRepository;
@@ -75,7 +78,7 @@ public class TaskServiceImpl implements TaskService {
     public List<TaskDTO> getAllTasksByStatus(String status) {
         switch (status){
             case "open" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.OPEN));
-            case "inprogress" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.INPROGESS));
+            case "inprogress" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.INPROGRESS));
             case "closed" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.CLOSED));
             default: return null;
         }
@@ -94,7 +97,7 @@ public class TaskServiceImpl implements TaskService {
         }
         else if(status.equals("inprogress")){
             for (Task task : allExpiredTasks) {
-                if(task.getStatus().equals(Status.INPROGESS)){
+                if(task.getStatus().equals(Status.INPROGRESS)){
                     finalTasks.add(task);
                 }
             }
@@ -115,12 +118,22 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task createTask(Task task) {
-        return repository.save(task);
+    public ResponseEntity<?> createTask(TaskDTO taskDTO) {
+        int userId = dataUtils.getCurrentUserId();
+        Task task = new Task();
+        task.setName(taskDTO.getName());
+        task.setProject(projectRepository.getById(taskDTO.getProjectId()));
+        task.setUser(userRepository.getById(userId));
+        task.setStatus(Status.OPEN);
+        task.setDescription(taskDTO.getDescription());
+        Task savedTask = repository.save(task);
+        return ResponseEntity
+                .ok()
+                .body(new MessageResponse(task.getName() + " is created by " + task.getUser().getFirstName() + " " + task.getUser().getLastName()));
     }
 
     @Override
-    public ResponseEntity<Task> updateTask(Task newTask, int id) {
+    public ResponseEntity<?> updateTask(TaskDTO newTaskDTO, int id) {
         Optional<Task> tempTask = repository.findById(id);
 
         if (tempTask.isPresent()) {
@@ -128,17 +141,17 @@ public class TaskServiceImpl implements TaskService {
             if(task.getStatus().equals(Status.CLOSED)){
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             }
-            task.setName(newTask.getName());
-            task.setProject(newTask.getProject());
-            task.setUser(newTask.getUser());
-            task.setStatus(newTask.getStatus());
-            task.setDescription(newTask.getDescription());
-            task.setCreateDate(newTask.getCreateDate());
-            task.setStartDate(newTask.getStartDate());
-            task.setEndDate(newTask.getEndDate());
-            return new ResponseEntity<>(repository.save(task), HttpStatus.OK);
+            task.setStatus(dataUtils.stringToStatus(newTaskDTO.getStatus()));
+            task.setDescription(newTaskDTO.getDescription());
+            task.setEndDate(newTaskDTO.getEndDate());
+            Task editedTask = repository.save(task);
+            return ResponseEntity
+                    .ok()
+                    .body(new MessageResponse(task.getName() + " is edited"));
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Task is not found"));
         }
     }
 

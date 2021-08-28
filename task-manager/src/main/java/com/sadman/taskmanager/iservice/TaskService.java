@@ -18,7 +18,7 @@ public interface TaskService {
     List<TaskDTO> getAllTasksByStatus(String status);
     List<TaskDTO> getAllExpiredTasksByStatus(String status);
     Task getTaskById(int id) throws RecordNotFoundException;
-    Task createTask(Task Task);
-    ResponseEntity<Task> updateTask(Task newTask, int id);
+    ResponseEntity<?> createTask(TaskDTO taskDTO);
+    ResponseEntity<?> updateTask(TaskDTO newTaskDTO, int id);
     void deleteTaskById(int id);
 }

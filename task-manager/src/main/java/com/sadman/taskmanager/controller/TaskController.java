@@ -1,5 +1,6 @@
 package com.sadman.taskmanager.controller;
 
+import com.sadman.taskmanager.dto.ProjectDTO;
 import com.sadman.taskmanager.dto.TaskDTO;
 import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.TaskService;
@@ -65,13 +66,13 @@ public class TaskController {
     }
 
     @PostMapping(value = "/tasks", consumes = MediaType.ALL_VALUE)
-    public Task createTask(@Valid @RequestBody Task task) {
-        return service.createTask(task);
+    public ResponseEntity<?> createTask(@Valid @RequestBody TaskDTO taskDTO) {
+        return service.createTask(taskDTO);
     }
 
     @PutMapping("/tasks/edit/{id}")
-    public ResponseEntity<Task> editTaskById(@RequestBody Task newTask, @PathVariable(value = "id") int taskId) {
-        return service.updateTask(newTask, taskId);
+    public ResponseEntity<?> editTaskById(@RequestBody TaskDTO newTaskDTO, @PathVariable(value = "id") int taskId) {
+        return service.updateTask(newTaskDTO, taskId);
     }
 
     @DeleteMapping("/tasks/delete/{id}")
