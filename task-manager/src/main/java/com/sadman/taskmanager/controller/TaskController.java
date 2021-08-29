@@ -27,7 +27,7 @@ public class TaskController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/tasks")
-    public List<TaskDTO> getAllTasks(Model model) {
+    public ResponseEntity<?> getAllTasks(Model model) {
         return service.getAllTasks();
     }
 
@@ -44,13 +44,18 @@ public class TaskController {
     }
 
     @GetMapping("projects/{id}/tasks")
-    public List<TaskDTO> getAllTasksByProjectId(@PathVariable(value = "id") int projectId) {
+    public ResponseEntity<?> getAllTasksByProjectId(@PathVariable(value = "id") int projectId) {
         return service.getAllTasksByProjectId(projectId);
     }
 
     @GetMapping("/tasks/status/{status}")
-    public List<TaskDTO> getAllTasksByStatus(@PathVariable(value = "status") String status) {
+    public ResponseEntity<?> getAllTasksByStatus(@PathVariable(value = "status") String status) {
         return service.getAllTasksByStatus(status);
+    }
+
+    @GetMapping("/tasks/expired")
+    public ResponseEntity<?> getAllExpiredTasks() {
+        return service.getAllExpiredTasks();
     }
 
     @GetMapping("/tasks/expired/status/{status}")
@@ -58,11 +63,10 @@ public class TaskController {
         return service.getAllExpiredTasksByStatus(status);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/tasks/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable(value = "id") int taskId)
-            throws RecordNotFoundException {
-        Task Task = service.getTaskById(taskId);
-        return ResponseEntity.ok().body(Task);
+    public ResponseEntity<?> getTaskById(@PathVariable(value = "id") int taskId) throws RecordNotFoundException {
+        return service.getTaskById(taskId);
     }
 
     @PostMapping(value = "/tasks", consumes = MediaType.ALL_VALUE)

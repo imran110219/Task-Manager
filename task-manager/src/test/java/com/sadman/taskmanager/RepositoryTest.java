@@ -5,6 +5,7 @@ import com.sadman.taskmanager.repository.ProjectRepository;
 import com.sadman.taskmanager.repository.RoleRepository;
 import com.sadman.taskmanager.repository.TaskRepository;
 import com.sadman.taskmanager.repository.UserRepository;
+import com.sadman.taskmanager.util.DataUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,8 +32,11 @@ public class RepositoryTest {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private DataUtils dataUtils;
+
     @Test
-    public void saveProjectRepositoryTest(){
+    public void saveProjectRepositoryTest() {
         Project project = new Project();
         project.setName("Project 1");
         project.setUser(userRepository.getById(1));
@@ -41,7 +45,7 @@ public class RepositoryTest {
     }
 
     @Test
-    public void saveTaskRepositoryTest(){
+    public void saveTaskRepositoryTest() {
         Task task = new Task();
         task.setName("Task 1");
         task.setProject(projectRepository.getById(1));
@@ -62,7 +66,7 @@ public class RepositoryTest {
     }
 
     @Test
-    public void saveUserRepositoryTest(){
+    public void saveUserRepositoryTest() {
         User user = new User();
         user.setFirstName("Mr");
         user.setLastName("John");
@@ -100,7 +104,8 @@ public class RepositoryTest {
 
     @Test
     public void getAllTasksByStatusTest() {
-        List<Task> taskList = taskRepository.findAllByStatus(Status.OPEN);
+        User user = userRepository.getById(1);
+        List<Task> taskList = taskRepository.findAllByStatusAndUser(Status.OPEN, user);
         for (Task task : taskList) {
             System.out.println(task.getName() + " " + task.getStatus());
         }
@@ -108,10 +113,9 @@ public class RepositoryTest {
 
     @Test
     public void getAllExpiredTasksByStatusTest() {
-        List<Task> taskList = taskRepository.findExpiredTasks();
+        List<Task> taskList = taskRepository.findExpiredTasks(1);
         for (Task task : taskList) {
-            if(task.getStatus().equals(Status.OPEN))
-                System.out.println(task.getName() + " " + task.getStatus());
+            System.out.println(task.getName() + " " + task.getStatus());
         }
     }
 

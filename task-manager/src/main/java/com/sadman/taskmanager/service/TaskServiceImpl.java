@@ -7,6 +7,7 @@ import com.sadman.taskmanager.iservice.TaskService;
 import com.sadman.taskmanager.model.Project;
 import com.sadman.taskmanager.model.Status;
 import com.sadman.taskmanager.model.Task;
+import com.sadman.taskmanager.model.User;
 import com.sadman.taskmanager.payload.response.MessageResponse;
 import com.sadman.taskmanager.repository.ProjectRepository;
 import com.sadman.taskmanager.repository.TaskRepository;
@@ -47,25 +48,37 @@ public class TaskServiceImpl implements TaskService {
     DataUtils dataUtils;
 
     @Override
-    public List<TaskDTO> getAllTasks() {
+    public ResponseEntity<?> getAllTasks() {
+        int userId = dataUtils.getCurrentUserId();
+        User user = userRepository.getById(userId);
+        if(user.getRole().getName().equals("ADMIN")){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: You are unauthorized!"));
+        }
         List<Task> taskList = repository.findAll();
-        return dataUtils.convertTaskDTOList(taskList);
+        return ResponseEntity.ok().body(dataUtils.convertTaskDTOList(taskList));
     }
 
     @Override
     public List<TaskDTO> getCurrentUserTasks() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String token = request.getHeader("Authorization").split(" ")[1];
-        String userName = jwtUtils.getUserNameFromJwtToken(token);
-        int userId = userRepository.findByUserName(userName).getId();
+        int userId = dataUtils.getCurrentUserId();
         List<Task> taskList = repository.findAllByUserId(userId);
         return dataUtils.convertTaskDTOList(taskList);
     }
 
     @Override
-    public List<TaskDTO> getAllTasksByProjectId(int projectId) {
+    public ResponseEntity<?> getAllTasksByProjectId(int projectId) {
+        int projectUserId = projectRepository.getById(projectId).getUser().getId();
+        int userId = dataUtils.getCurrentUserId();
+        if(projectUserId != userId){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: You are unauthorized!"));
+        }
         List<Task> taskList = repository.findAllByProjectId(projectId);
-        return dataUtils.convertTaskDTOList(taskList);
+        List<TaskDTO> taskDTOList = dataUtils.convertTaskDTOList(taskList);
+        return ResponseEntity.ok().body(taskDTOList);
     }
 
     @Override
@@ -75,18 +88,29 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskDTO> getAllTasksByStatus(String status) {
+    public ResponseEntity<?> getAllTasksByStatus(String status) {
+        int userId = dataUtils.getCurrentUserId();
+        User user = userRepository.getById(userId);
         switch (status){
-            case "open" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.OPEN));
-            case "inprogress" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.INPROGRESS));
-            case "closed" : return dataUtils.convertTaskDTOList(repository.findAllByStatus(Status.CLOSED));
+            case "open" : return ResponseEntity.ok().body(dataUtils.convertTaskDTOList(repository.findAllByStatusAndUser(Status.OPEN, user)));
+            case "inprogress" : return ResponseEntity.ok().body(dataUtils.convertTaskDTOList(repository.findAllByStatusAndUser(Status.INPROGRESS, user)));
+            case "closed" : return ResponseEntity.ok().body(dataUtils.convertTaskDTOList(repository.findAllByStatusAndUser(Status.CLOSED, user)));
             default: return null;
         }
     }
 
     @Override
+    public ResponseEntity<?> getAllExpiredTasks() {
+        int userId = dataUtils.getCurrentUserId();
+        List<Task> allExpiredTasks = repository.findExpiredTasks(userId);
+        List<TaskDTO> allExpiredTaskDTOList = dataUtils.convertTaskDTOList(allExpiredTasks);
+        return ResponseEntity.ok().body(allExpiredTaskDTOList);
+    }
+
+    @Override
     public List<TaskDTO> getAllExpiredTasksByStatus(String status) {
-        List<Task> allExpiredTasks = repository.findExpiredTasks();
+        int userId = dataUtils.getCurrentUserId();
+        List<Task> allExpiredTasks = repository.findExpiredTasks(userId);
         List<Task> finalTasks = new ArrayList<>();
         if(status.equals("open")){
             for (Task task : allExpiredTasks) {
@@ -113,8 +137,22 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task getTaskById(int id) throws RecordNotFoundException {
-        return repository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
+    public ResponseEntity<?> getTaskById(int id) throws RecordNotFoundException {
+        Task task = repository.findById(id).orElseThrow(() -> new RecordNotFoundException(id));
+        int userId = dataUtils.getCurrentUserId();
+        if(userId != task.getUser().getId()){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: You are unauthorized!"));
+        }
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setName(task.getName());
+        taskDTO.setDescription(task.getDescription());
+        taskDTO.setProjectId(task.getProject().getId());
+        taskDTO.setUserName(userRepository.getById(userId).getUserName());
+        taskDTO.setStatus(task.getStatus().toString());
+        taskDTO.setEndDate(task.getEndDate());
+        return ResponseEntity.ok().body(taskDTO);
     }
 
     @Override

@@ -222,3 +222,173 @@ Content-Type: application/json
     "message": "Task 4 is edited"
 }
 ``` 
+
+## Get Task
+**You send:**  Task Id with authorization token.
+**You get:** A response message of the task.
+
+**Request:**
+```json
+localhost:8080/api/tasks/1
+GET 
+Content-Type: application/json
+```
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "name": "Task 1",
+    "projectId": 1,
+    "userName": "admin",
+    "status": "OPEN",
+    "description": "Task 1 Description",
+    "endDate": "25-08-2021"
+}
+``` 
+**Failed Response:**
+```json
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "message": "message": "Error: You are unauthorized!"
+}
+```
+
+## Search Task By Project Id
+**You send:**  Project Id with authorization token.
+**You get:** A response message of the task list by project.
+
+**Request:**
+```json
+localhost:8080/api/projects/1/tasks
+GET 
+Content-Type: application/json
+```
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+    {
+        "name": "Task 1",
+        "projectId": 1,
+        "userName": "admin",
+        "status": "OPEN",
+        "description": "Task 1 Description",
+        "endDate": "25-08-2021"
+    },
+    {
+        "name": "Task 2",
+        "projectId": 1,
+        "userName": "admin",
+        "status": "OPEN",
+        "description": "Task 2 Description",
+        "endDate": "30-08-2021"
+    }
+]
+``` 
+**Failed Response:**
+```json
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "message": "message": "Error: You are unauthorized!"
+}
+```
+
+## Get Expired Tasks
+**You send:**  authorization token.
+**You get:** A response message of the task list by project.
+
+**Request:**
+```json
+localhost:8080/api/tasks/expired
+GET 
+Content-Type: application/json
+```
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+    {
+        "name": "Task 1",
+        "projectId": 1,
+        "userName": "admin",
+        "status": "OPEN",
+        "description": "Task 1 Description",
+        "endDate": "22-08-2021"
+    },
+    {
+        "name": "Task 2",
+        "projectId": 1,
+        "userName": "admin",
+        "status": "OPEN",
+        "description": "Task 2 Description",
+        "endDate": "22-08-2021"
+    }
+]
+``` 
+
+## Get Tasks by Status
+**You send:**  authorization token.
+**You get:** A response message of the task list by status.
+
+**Request:**
+```json
+localhost:8080/api/tasks/status/open
+GET 
+Content-Type: application/json
+```
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+    {
+        "name": "Task 1",
+        "projectId": 1,
+        "userName": "admin",
+        "status": "OPEN",
+        "description": "Task 1 Description",
+        "endDate": "22-08-2021"
+    },
+    {
+        "name": "Task 2",
+        "projectId": 1,
+        "userName": "admin",
+        "status": "OPEN",
+        "description": "Task 2 Description",
+        "endDate": "22-08-2021"
+    }
+]
+``` 
+
+## Get All Tasks (Only Admin Access)
+**You send:**  authorization token.
+**You get:** A response message of all tasks
+
+**Request:**
+```json
+localhost:8080/api/tasks
+GET 
+Content-Type: application/json
+```
+
+## Get All Projects (Only Admin Access)
+**You send:**  authorization token.
+**You get:** A response message of all tasks
+
+**Request:**
+```json
+localhost:8080/api/projects
+GET 
+Content-Type: application/json
+```

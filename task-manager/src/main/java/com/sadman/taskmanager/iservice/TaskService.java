@@ -11,13 +11,14 @@ import java.util.List;
  * @author Sadman
  */
 public interface TaskService {
-    List<TaskDTO> getAllTasks();
+    ResponseEntity<?> getAllTasks();
     List<TaskDTO> getCurrentUserTasks();
-    List<TaskDTO> getAllTasksByProjectId(int projectId);
+    ResponseEntity<?> getAllTasksByProjectId(int projectId);
     List<TaskDTO> getAllTasksByUserId(int userId);
-    List<TaskDTO> getAllTasksByStatus(String status);
+    ResponseEntity<?> getAllTasksByStatus(String status);
+    ResponseEntity<?> getAllExpiredTasks();
     List<TaskDTO> getAllExpiredTasksByStatus(String status);
-    Task getTaskById(int id) throws RecordNotFoundException;
+    ResponseEntity<?> getTaskById(int id) throws RecordNotFoundException;
     ResponseEntity<?> createTask(TaskDTO taskDTO);
     ResponseEntity<?> updateTask(TaskDTO newTaskDTO, int id);
     void deleteTaskById(int id);

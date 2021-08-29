@@ -5,6 +5,7 @@ import com.sadman.taskmanager.exception.RecordNotFoundException;
 import com.sadman.taskmanager.iservice.ProjectService;
 import com.sadman.taskmanager.model.Project;
 import com.sadman.taskmanager.model.Task;
+import com.sadman.taskmanager.model.User;
 import com.sadman.taskmanager.payload.response.MessageResponse;
 import com.sadman.taskmanager.repository.ProjectRepository;
 import com.sadman.taskmanager.repository.TaskRepository;
@@ -44,9 +45,16 @@ public class ProjectServiceImpl implements ProjectService {
     DataUtils dataUtils;
 
     @Override
-    public List<ProjectDTO> getAllProjects() {
+    public ResponseEntity<?> getAllProjects() {
+        int userId = dataUtils.getCurrentUserId();
+        User user = userRepository.getById(userId);
+        if(user.getRole().getName().equals("ADMIN")){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: You are unauthorized!"));
+        }
         List<Project> projectList = repository.findAll();
-        return dataUtils.convertProjectDTOList(projectList);
+        return ResponseEntity.ok().body(dataUtils.convertProjectDTOList(projectList));
     }
 
     @Override

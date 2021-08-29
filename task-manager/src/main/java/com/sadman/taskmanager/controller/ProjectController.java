@@ -28,7 +28,7 @@ public class ProjectController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/projects")
-    public List<ProjectDTO> getAllProjects(Model model) {
+    public ResponseEntity<?> getAllProjects(Model model) {
         return service.getAllProjects();
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
  * @author Sadman
  */
 public interface ProjectService {
-    List<ProjectDTO> getAllProjects();
+    ResponseEntity<?> getAllProjects();
     List<ProjectDTO> getCurrentUserProjects();
     List<ProjectDTO> getAllProjectsByUserId(int userId);
     Project getProjectById(int id) throws RecordNotFoundException;
